@@ -50,3 +50,4 @@ elif choice == 3:
         citations = {}
         asn.createCSV(crossData, CROSS_DATA_CSV,
                       ['name', 'articles', 'citations', 'hindex'], 0)
+        asn.sampleGraph()
