@@ -51,10 +51,10 @@ def cleanCandidatesCSV(filename):
 
 
 # INVOCAZIONE DELL'API CROSSREF PER FARSI RESTITUIRE I DATI RELATIVI AD UN DOI
-# VIENE VERIFICATO CHE IL DOI SIA COLLEGATO AD UN ARTICOLO PUBBLICATO SU UN JOURNAL E VIENE RESTITUITA LA LISTA DEGLI AUTORI E DEI SETTORI
+# VIENE VERIFICATO CHE IL DOI SIA COLLEGATO AD UN ARTICOLO PUBBLICATO SU UN JOURNAL E VIENE RESTITUITA LA LISTA DEGLI AUTORI
 def checkDoiJournalArticle(doi):
     url = CROSSREF + doi
-    subject = []
+    isJournal = False
     author = []
     try:
         r = requests.get(url)
@@ -63,28 +63,18 @@ def checkDoiJournalArticle(doi):
             if 'message' in data:
                 if 'type' in data['message']:
                     if data['message']['type'] == 'journal-article':
-                        if 'subject' in data['message']:
-                            subject = data['message']['subject']
-                        if 'author' in data['message']:
-                            author = data['message']['author']
-                        return True, subject, author
-                    else:
-                        return False, subject, author
-                else:
-                    return False, subject, author
-            else:
-                return False, subject, author
-        else:
-            return False, subject, author
+                        isJournal = True
+                if 'author' in data['message']:
+                    author = data['message']['author']
+        return isJournal, author
     except requests.exceptions.RequestException as e:
         print(e)
         print('### DOI NOT FOUND ###', doi)
-        return False, subject, author
+        return isJournal, author
 
 
 # ELABORAZIONE DEL TSV DEI CANDIDATI MEDIANTE INVOCAZIONE AI SERVIZI CROSSREF
-def formatData(filename, calculatedRows, candidatesCSV, doiSubjectsCSV):
-    doiSubjects = {}
+def formatData(filename, calculatedRows, candidatesCSV):
     candidates = {}
     with open(filename) as document:
         reader = csv.reader(document, dialect='excel-tab')
@@ -95,22 +85,20 @@ def formatData(filename, calculatedRows, candidatesCSV, doiSubjectsCSV):
         candidateIndex = 0
         doneRows = calculatedRows + 1
         for row in reader:
-            if len(row) == 3:
+            if len(row) >= 3:
                 level = row[0]
                 session = row[1]
-                dois = []
+                journalDois = []
                 doisArray = row[2].split(", ")
                 doisArray = set(doisArray)  # ELIMINA RIPETIZIONI
                 authors = {}
                 authorsIndex = 0
                 for doi in doisArray:
-                    check, subject, author = checkDoiJournalArticle(doi)
+                    check, author = checkDoiJournalArticle(doi)
                     if check:
-                        dois.append(doi)
+                        journalDois.append(doi)
                         authors[authorsIndex] = author
                         authorsIndex = authorsIndex + 1
-                        if subject != []:
-                            doiSubjects[doi] = subject
                 authorsOccurrency = {}
                 for work in authors:  # RICERCA DEL NOME DELL'AUTORE
                     if authors[work] is not None:
@@ -137,16 +125,12 @@ def formatData(filename, calculatedRows, candidatesCSV, doiSubjectsCSV):
                     if authorsOccurrency[author] > candidateOccurrency:
                         candidateName = author
                         candidateOccurrency = authorsOccurrency[author]
-                if len(dois) > 0:
+                if len(journalDois) > 0 or len(doisArray) > 0:
                     candidates[candidateIndex] = {
-                        'name': candidateName, 'level': level, 'session': session, 'dois': dois}
+                        'name': candidateName, 'level': level, 'session': session, 'journalDois': journalDois, 'dois': row[2]}
                     candidateIndex = candidateIndex + 1
                     asn.createCSV(candidates, candidatesCSV,
-                                  ['name', 'level', 'session', 'dois'], calculatedRows)  # SCRITTURA SUL CSV DEI CANDIDATI
-                if len(doiSubjects) > 0:
-                    # SCRITTURA SUL CSV DEI SETTORI
-                    asn.createDoiSubjectsCSV(doiSubjects, doiSubjectsCSV)
-            doiSubjects = {}
+                                  ['name', 'level', 'session', 'journalDois', 'dois'], calculatedRows)  # SCRITTURA SUL CSV DEI CANDIDATI
             candidates = {}
             print('END ROW ' + str(doneRows))
             doneRows = doneRows + 1

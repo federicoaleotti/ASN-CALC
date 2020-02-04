@@ -4,24 +4,22 @@ import sys
 import os
 import csv
 
-CALCULATED_ROWS = 0
-DOI_SUBJECTS_CSV = './data/DOI_SUBJECTS.csv'
 CANDIDATES_CSV = './data/CANDIDATES_OUT.csv'
 CITATIONS_CSV = './data/CITATIONS_OUT.csv'
 CROSS_DATA_CSV = './data/CROSS_DATA.csv'
 
 
-choice, path1, path2, path3, subjectsString = asn.menu()
+choice, path1, path2 = asn.menu()
 
 if choice == 1:
     if asn.checkFileIsPresent(path1):
+        calculatedRows = 0
         print('GENERATING CANDIDATES')
         if asn.checkFileIsPresent(CANDIDATES_CSV):
-            CALCULATED_ROWS = asn.checkProcess(CANDIDATES_CSV)
-            print('RESUMING FROM ROW ' + str(CALCULATED_ROWS))
+            calculatedRows = asn.checkProcess(CANDIDATES_CSV)
+            print('RESUMING FROM ROW ' + str(calculatedRows))
         asn.formatData(
-            path1, CALCULATED_ROWS, CANDIDATES_CSV, DOI_SUBJECTS_CSV)
-        # ELIMINARE LE RIPETIZIONI DEI CANDIDATI ???
+            path1, calculatedRows, CANDIDATES_CSV)
     else:
         print(path1, ' NOT FOUND')
 elif choice == 2:
@@ -33,19 +31,16 @@ elif choice == 2:
     else:
         print(path1, ' NOT FOUND')
 elif choice == 3:
-    subjects = []
-    if subjectsString != '':
-        subjects = subjectsString.split(',')
     fileFound = asn.checkFileIsPresent(path1) and asn.checkFileIsPresent(path2)
     if not fileFound:
         print(path1, ' OR ', path2, ' NOT FOUND')
     else:
-        ('CALCULATING INDEXES AND GENERATING GRAPHS')
+        ('CALCULATING INDEXES')
         if asn.checkFileIsPresent(CROSS_DATA_CSV):
             os.remove(CROSS_DATA_CSV)
         candidates = asn.createDict(path1)
         citations = asn.createSimpleDict(path2)
-        crossData = asn.crossData(candidates, citations, subjects, path3)
+        crossData = asn.crossData(candidates, citations)
         candidates = {}
         citations = {}
         asn.createCSV(crossData, CROSS_DATA_CSV,

@@ -38,26 +38,6 @@ def createCSV(data, filename, keys, calculatedRows):
         writer.writerows(csvData)
 
 
-# CREAZIONE O MODIFICA DEL CSV DEI SETTORI A PARTIRE DA UN DIZIONARIO CONTENENTE I DATI NELLA FORMA {"COL": VAL, "COL": VAL}
-def createDoiSubjectsCSV(data, filename):
-    new = False
-    if not checkFileIsPresent(filename):
-        new = True
-    with open(filename, 'a', newline='', encoding='utf-8') as document:
-        writer = csv.writer(document)
-        if new:
-            writer.writerow(['doi', 'subjects'])
-        for doi in data:
-            subjects = ''
-            for subject in data[doi]:
-                if subjects == '':
-                    subjects = subject
-                else:
-                    subjects = subjects + ', ' + subject
-            row = [doi, subjects]
-            writer.writerow(row)
-
-
 # CREAZIONE O MODIFICA DEL CSV DELLE CITAZIONI A PARTIRE DA UN DIZIONARIO CONTENENTE I DATI NELLA FORMA {"COL": VAL, "COL": VAL}
 def createCitationsCSV(data, filename):
     with open(filename, 'a', newline='', encoding='utf-8') as document:
@@ -102,19 +82,7 @@ def createCandidatesDoisSet(filename):
         reader = csv.reader(document, delimiter=",")
         next(reader)
         for row in reader:
-            doisList = row[3].split(', ')
+            doisList = row[4].split(', ')
             for doi in doisList:
                 dois.add(doi)
     return dois
-
-
-def createSubjectsSet(filename):
-    subjects = set()
-    with open(filename, encoding='utf-8') as document:
-        reader = csv.reader(document, delimiter=",")
-        next(reader)
-        for row in (reader):
-            subjectsList = row[1].split(', ')
-            for subject in subjectsList:
-                subjects.add(subject)
-    return subjects
