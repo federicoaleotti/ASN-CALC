@@ -7,6 +7,7 @@ import csv
 CANDIDATES_CSV = './data/CANDIDATES_OUT.csv'
 CITATIONS_CSV = './data/CITATIONS_OUT.csv'
 CROSS_DATA_CSV = './data/CROSS_DATA.csv'
+PUBBLICATION_DATES_CSV = './data/PUBBLICATION_DATES.csv'
 
 
 choice, path1, path2 = asn.menu()
@@ -19,7 +20,7 @@ if choice == 1:
             calculatedRows = asn.checkProcess(CANDIDATES_CSV)
             print('RESUMING FROM ROW ' + str(calculatedRows))
         asn.formatData(
-            path1, calculatedRows, CANDIDATES_CSV)
+            path1, calculatedRows, CANDIDATES_CSV, PUBBLICATION_DATES_CSV)
     else:
         print(path1, ' NOT FOUND')
 elif choice == 2:

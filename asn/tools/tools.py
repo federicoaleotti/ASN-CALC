@@ -48,6 +48,15 @@ def createCitationsCSV(data, filename):
             writer.writerow(row)
 
 
+
+def createPubblicationDatesCSV(data, filename):
+    with open(filename, 'a', newline='', encoding='utf-8') as document:
+        writer = csv.writer(document)
+        for doi in data:
+            row = [doi, data[doi]]
+            writer.writerow(row)
+
+
 # CREAZIONE DI UN DIZIONARIO A PARTIRE DA UN FILE CSV NELLA FORMA {0:{"COL": VAL, "COL": VAL}}
 def createDict(filename):
     data = {}
