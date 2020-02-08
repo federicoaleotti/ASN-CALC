@@ -49,7 +49,7 @@ def createCitationsCSV(data, filename):
 
 
 
-def createPubblicationDatesCSV(data, filename):
+def createPublicationDatesCSV(data, filename):
     with open(filename, 'a', newline='', encoding='utf-8') as document:
         writer = csv.writer(document)
         for doi in data:

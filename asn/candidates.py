@@ -16,17 +16,17 @@ def cleanCandidatesCSV(filename):
         candidatesIndex = 0
         for row in reader:
             if row[0] in candidatesByName:
-                if row[1] != candidatesByName[row[0]]['level'] or row[2] != candidatesByName[row[0]]['session'] or row[3] != candidatesByName[row[0]]['dois']:
+                if row[1] != candidatesByName[row[0]]['level'] or row[2] != candidatesByName[row[0]]['session'] or row[3] != candidatesByName[row[0]]['journalDois'] or row[4] != candidatesByName[row[0]]['dois']:
                     candidatesByName[row[0]] = {
-                        'name': row[0], 'level': row[1], 'session': row[2], 'dois': row[3]}
+                        'name': row[0], 'level': row[1], 'session': row[2], 'journalDois': row[3], 'dois': row[4]}
                     candidates[candidatesIndex] = {
-                        'name': row[0], 'level': row[1], 'session': row[2], 'dois': row[3]}
+                        'name': row[0], 'level': row[1], 'session': row[2], 'journalDois': row[3], 'dois': row[4]}
                     candidatesIndex = candidatesIndex + 1
             else:
                 candidatesByName[row[0]] = {
-                    'name': row[0], 'level': row[1], 'session': row[2], 'dois': row[3]}
+                    'name': row[0], 'level': row[1], 'session': row[2], 'journalDois': row[3], 'dois': row[4]}
                 candidates[candidatesIndex] = {
-                    'name': row[0], 'level': row[1], 'session': row[2], 'dois': row[3]}
+                    'name': row[0], 'level': row[1], 'session': row[2], 'journalDois': row[3], 'dois': row[4]}
                 candidatesIndex = candidatesIndex + 1
     if not os.path.exists('./data/tmp'):
         os.makedirs('./data/tmp')
@@ -35,7 +35,7 @@ def cleanCandidatesCSV(filename):
     os.remove(filename)
     try:
         asn.createCSV(candidates, filename, [
-                      'name', 'level', 'session', 'dois'], 0)
+                      'name', 'level', 'session', 'journalDois', 'dois'], 0)
     except:
         print('Error while refactoring CANDIDATES_OUT')
         open(filename, 'a').close()
@@ -44,14 +44,42 @@ def cleanCandidatesCSV(filename):
         os.remove('./data/tmp/BACKUP_CANDIDATES_OUT.csv')
 
 
+# RIMOZIONE DAL FILE PUBLICATION_DATES DELLE ENTRIES DOPPIE
+def cleanPublicationCSV(filename):
+    publications = {}
+    with open(filename) as document:
+        reader = csv.reader(document, delimiter=",")
+        next(reader)
+        for row in reader:
+            if not row[0] in publications:
+                publications[row[0]] = row[1]
+            else:
+                if row[1] != publications[row[0]]:
+                    publications[row[0]] = min(row[1], publications[row[0]])
+    if not os.path.exists('./data/tmp'):
+        os.makedirs('./data/tmp')
+    open('./data/tmp/BACKUP_PUBLICATION_DATES.csv', 'a').close()
+    shutil.copyfile(filename, './data/tmp/BACKUP_PUBLICATION_DATES.csv')
+    os.remove(filename)
+    try:
+        asn.createPublicationDatesCSV(publications, filename)
+    except:
+        print('Error while refactoring PUBLICATION_DATES.csv')
+        open(filename, 'a').close()
+        shutil.copyfile('./data/tmp/BACKUP_PUBLICATION_DATES.csv', filename)
+        os.remove('./data/tmp/BACKUP_PUBLICATION_DATES.csv')
+    finally:
+        os.remove('./data/tmp/BACKUP_PUBLICATION_DATES.csv')
+
+
 # INVOCAZIONE DELL'API CROSSREF PER FARSI RESTITUIRE I DATI RELATIVI AD UN DOI
 # VIENE VERIFICATO CHE IL DOI SIA COLLEGATO AD UN ARTICOLO PUBBLICATO SU UN JOURNAL E VIENE RESTITUITA LA LISTA DEGLI AUTORI
 def checkDoiJournalArticle(doi):
     isJournal = False
     author = []
-    pubblicationDate = 0
+    publicationDate = 0
     printDate = 9999
-    onlineDate = 9999 
+    onlineDate = 9999
     works = Works()
     try:
         data = works.doi(doi)
@@ -64,17 +92,17 @@ def checkDoiJournalArticle(doi):
             printDate = data['published-print']['date-parts'][0][0]
         if 'published-online' in data:
             onlineDate = data['published-online']['date-parts'][0][0]
-        pubblicationDate = min(printDate, onlineDate)
-        return isJournal, author, pubblicationDate
+        publicationDate = min(printDate, onlineDate)
+        return isJournal, author, publicationDate
     except KeyboardInterrupt:
         exit()
     except:
         print('DOI NOT FOUND: ', doi)
-        return isJournal, author, pubblicationDate
+        return isJournal, author, publicationDate
 
 
 # ELABORAZIONE DEL TSV DEI CANDIDATI MEDIANTE INVOCAZIONE AI SERVIZI CROSSREF
-def formatData(filename, calculatedRows, candidatesCSV, pubblicationDatesCSV):
+def formatData(filename, calculatedRows, candidatesCSV, publicationDatesCSV):
     candidates = {}
     with open(filename) as document:
         reader = csv.reader(document, dialect='excel-tab')
@@ -93,13 +121,14 @@ def formatData(filename, calculatedRows, candidatesCSV, pubblicationDatesCSV):
                 doisArray = set(doisArray)  # ELIMINA RIPETIZIONI
                 authors = {}
                 authorsIndex = 0
-                pubblicationDates = {}
+                publicationDates = {}
                 for doi in doisArray:
-                    check, author, pubblicationDate = checkDoiJournalArticle(doi)
+                    check, author, publicationDate = checkDoiJournalArticle(
+                        doi)
                     if check:
                         journalDois.append(doi)
-                    if pubblicationDate != 0 and pubblicationDate != 9999:
-                        pubblicationDates[doi] = pubblicationDate
+                    if publicationDate != 0 and publicationDate != 9999:
+                        publicationDates[doi] = publicationDate
                     authors[authorsIndex] = author
                     authorsIndex = authorsIndex + 1
                 authorsOccurrency = {}
@@ -134,13 +163,15 @@ def formatData(filename, calculatedRows, candidatesCSV, pubblicationDatesCSV):
                     candidateIndex = candidateIndex + 1
                     asn.createCSV(candidates, candidatesCSV,
                                   ['name', 'level', 'session', 'journalDois', 'dois'], calculatedRows)  # SCRITTURA SUL CSV DEI CANDIDATI
-                if len(pubblicationDates) > 0:
-                    asn.createPubblicationDatesCSV(pubblicationDates, pubblicationDatesCSV)
+                if len(publicationDates) > 0:
+                    asn.createPublicationDatesCSV(
+                        publicationDates, publicationDatesCSV)
             candidates = {}
             print('END ROW ' + str(doneRows))
             doneRows = doneRows + 1
             calculatedRows = calculatedRows + 1
     cleanCandidatesCSV(candidatesCSV)
+    cleanPublicationCSV(publicationDatesCSV)
 
 
 # VERIFICA DELLO STATO DI AVANZAMENTO DELL'ANALISI DEL TSV CORRISPONDENTE AL NUMERO DI RIGHE MEMORIZZATE NEL FILE CSV
