@@ -48,7 +48,6 @@ def createCitationsCSV(data, filename):
             writer.writerow(row)
 
 
-
 def createPublicationDatesCSV(data, filename):
     with open(filename, 'a', newline='', encoding='utf-8') as document:
         writer = csv.writer(document)
@@ -95,3 +94,24 @@ def createCandidatesDoisSet(filename):
             for doi in doisList:
                 dois.add(doi)
     return dois
+
+
+def createCrossByIdDict(filename):
+    data = {}
+    with open(filename, encoding='utf-8') as document:
+        reader = csv.reader(document, delimiter=",")
+        next(reader)
+        for row in reader:
+            level = int(row[2])
+            otherLevel = 2
+            if level == 2:
+                otherLevel = 1
+            if row[0] in data:
+                data[row[0]][row[2]] = {'id': row[0], 'name': row[1], 'level': row[2],
+                                   'articles': row[3], 'citations': row[4], 'hindex': row[5]}
+            else:
+                data[row[0]] = {
+                    level: {'id': row[0], 'name': row[1], 'level': row[2], 'articles': row[3], 'citations': row[4], 'hindex': row[5]},
+                    otherLevel: {}
+                }
+    return data

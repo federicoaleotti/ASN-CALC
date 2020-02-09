@@ -6,7 +6,7 @@ def menu():
         print(30 * "-", "ASN-CALC", 30 * "-")
         print("1. Generate candidates CSV ")
         print("2. Generate citations count CSV ")
-        print("3. Calculate indexes")
+        print("3. Calculate indexes and gap between calculated and real data")
         print("4. Exit")
         print(73 * "-")
 

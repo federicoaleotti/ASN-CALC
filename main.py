@@ -10,6 +10,7 @@ CANDIDATES_OUT = configurations.CANDIDATES_OUT
 COCI_DATA = configurations.COCI_DATA
 CITATIONS_OUT = configurations.CITATIONS_OUT
 CROSS_DATA = configurations.CROSS_DATA
+REAL_DATA = configurations.REAL_DATA
 PUBLICATION_DATES = configurations.PUBLICATION_DATES
 
 choice = asn.menu()
@@ -50,5 +51,5 @@ elif choice == 3:
         candidates = {}
         citations = {}
         asn.createCSV(crossData, CROSS_DATA,
-                      ['name', 'articles', 'citations', 'hindex'], 0)
+                      ['id', 'name', 'level', 'subject', 'articles', 'real_articles', 'citations', 'real_citations', 'hindex', 'real_hindex'], 0)
         # asn.sampleGraph()
