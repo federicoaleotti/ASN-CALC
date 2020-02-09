@@ -18,15 +18,15 @@ def validateCandidate(level, subject, articles, citations, hindex):
 
 
 # CONFRONTO TRA DATI CALCOLATI E DATI REALI
-def matchData(crossDataCSV):
-    crossData = asn.createDict(crossDataCSV)
-    for elem in crossData:
-        validCalc = validateCandidate(int(crossData[elem]['level']), crossData[elem]['subject'],
-                                      int(crossData[elem]['articles']), int(crossData[elem]['citations']), int(crossData[elem]['hindex']))
-        validReal = validateCandidate(int(crossData[elem]['level']), crossData[elem]['subject'],
-                                      int(crossData[elem]['real_articles']), int(crossData[elem]['real_citations']), int(crossData[elem]['real_hindex']))
+# def matchData(crossDataCSV):
+#     crossData = asn.createDict(crossDataCSV)
+#     for elem in crossData:
+#         validCalc = validateCandidate(int(crossData[elem]['level']), crossData[elem]['subject'],
+#                                       int(crossData[elem]['articles']), int(crossData[elem]['citations']), int(crossData[elem]['hindex']))
+#         validReal = validateCandidate(int(crossData[elem]['level']), crossData[elem]['subject'],
+#                                       int(crossData[elem]['real_articles']), int(crossData[elem]['real_citations']), int(crossData[elem]['real_hindex']))
         
-        print(validCalc, validReal)
+#         print(validCalc, validReal)
 
 
 # AGGIUNGE I DATI REALI AGLI INDICI CALCOLATI
