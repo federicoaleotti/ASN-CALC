@@ -13,7 +13,7 @@ CROSS_DATA = configurations.CROSS_DATA
 REAL_DATA = configurations.REAL_DATA
 PUBLICATION_DATES = configurations.PUBLICATION_DATES
 
-choice = asn.menu()
+choice = asn.mainMenu()
 
 if choice == 1:
     if asn.checkFileIsPresent(CANDIDATES_IN):
@@ -52,4 +52,6 @@ elif choice == 3:
         citations = {}
         asn.createCSV(crossData, CROSS_DATA,
                       ['id', 'name', 'level', 'subject', 'articles', 'real_articles', 'citations', 'real_citations', 'hindex', 'real_hindex'], 0)
-        # asn.sampleGraph()
+elif choice == 4:
+    results = asn.analizeResults(CROSS_DATA)
+    asn.validHistogram(results[0]['validCalc'], results[0]['validReal'])

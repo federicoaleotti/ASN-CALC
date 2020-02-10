@@ -26,7 +26,7 @@ SESSIONS_MAP = {
     4: 2016,
     5: 2016
 }
-SUBJECTS = []
+SUBJECTS = ["INFORMATICA", "SOME"]
 THRESHOLDS = {
     "INFORMATICA": {
         1: {

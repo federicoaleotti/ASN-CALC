@@ -17,16 +17,49 @@ def validateCandidate(level, subject, articles, citations, hindex):
     return valid
 
 
-# CONFRONTO TRA DATI CALCOLATI E DATI REALI
-# def matchData(crossDataCSV):
-#     crossData = asn.createDict(crossDataCSV)
-#     for elem in crossData:
-#         validCalc = validateCandidate(int(crossData[elem]['level']), crossData[elem]['subject'],
-#                                       int(crossData[elem]['articles']), int(crossData[elem]['citations']), int(crossData[elem]['hindex']))
-#         validReal = validateCandidate(int(crossData[elem]['level']), crossData[elem]['subject'],
-#                                       int(crossData[elem]['real_articles']), int(crossData[elem]['real_citations']), int(crossData[elem]['real_hindex']))
-        
-#         print(validCalc, validReal)
+# CONFRONTO TRA DATI CALCOLATI E DATI REALI CONSIDERANDO IL SETTORE
+def matchData(crossData, subject):
+    validCalc = 0
+    validReal = 0
+    matching = 0
+    for elem in crossData:
+        calc = False
+        real = False
+        if subject == "" or crossData[elem]['subject'] == subject:
+            if validateCandidate(int(crossData[elem]['level']), crossData[elem]['subject'],
+                                 int(crossData[elem]['articles']), int(crossData[elem]['citations']), int(crossData[elem]['hindex'])):
+                validCalc = validCalc + 1
+                calc = True
+            if validateCandidate(int(crossData[elem]['level']), crossData[elem]['subject'],
+                                 int(crossData[elem]['real_articles']), int(crossData[elem]['real_citations']), int(crossData[elem]['real_hindex'])):
+                validReal = validReal + 1
+                real = True
+            if calc == real:
+                matching = matching + 1
+    return validCalc, validReal, matching
+
+
+# ANALISI DEI RISULTATI OTTENUTI
+# TIPO 1 DIVERSIFICATA TIPO - 2 UNICA
+def analizeResults(crossDataCSV):
+    crossData = asn.createDict(crossDataCSV)
+    results = {}
+    if len(SUBJECTS) > 1:
+        choice = asn.typeMenu()
+        if choice == 1:
+            for subject in SUBJECTS:
+                validCalc, validReal, matching = matchData(crossData, subject)
+                results[subject] = {
+                    'validCalc': validCalc, 'validReal': validReal, 'matching': matching}
+        else:
+            validCalc, validReal, matching = matchData(crossData, "")
+            results[0] = {
+                'validCalc': validCalc, 'validReal': validReal, 'matching': matching}
+    else:
+        validCalc, validReal, matching = matchData(crossData, "")
+        results[0] = {
+            'validCalc': validCalc, 'validReal': validReal, 'matching': matching}
+    return results
 
 
 # AGGIUNGE I DATI REALI AGLI INDICI CALCOLATI

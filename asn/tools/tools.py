@@ -96,6 +96,8 @@ def createCandidatesDoisSet(filename):
     return dois
 
 
+
+# CREA UN DIZIONARIO ORGANIZZATO PER ID E LIVELLO
 def createCrossByIdDict(filename):
     data = {}
     with open(filename, encoding='utf-8') as document:
