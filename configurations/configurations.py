@@ -1,5 +1,5 @@
-CANDIDATES_IN = './data/CANDIDATES.tsv'
-CANDIDATES_OUT = './data/FAKE_CANDIDATES_OUT.csv'
+CANDIDATES_IN = './data/CANDIDATES_TEST.csv'
+CANDIDATES_OUT = './data/CANDIDATES_OUT.csv'
 COCI_DATA = './data/COCI_DATA.csv'
 CITATIONS_OUT = './data/CITATIONS_OUT.csv'
 CROSS_DATA = './data/CROSS_DATA.csv'
@@ -21,12 +21,12 @@ TIME_GAPS = {
 }
 SESSIONS_MAP = {
     1: 2016,
-    2: 2016,
-    3: 2016,
-    4: 2016,
-    5: 2016
+    2: 2017,
+    3: 2017,
+    4: 2017,
+    5: 2018
 }
-SUBJECTS = ["INFORMATICA", "SOME"]
+SUBJECTS = ["01-B1"]
 THRESHOLDS = {
     "INFORMATICA": {
         1: {

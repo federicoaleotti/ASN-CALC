@@ -5,38 +5,68 @@ import configurations
 SUBJECTS = configurations.SUBJECTS
 TIME_GAPS = configurations.TIME_GAPS
 SESSIONS_MAP = configurations.SESSIONS_MAP
-THRESHOLDS = configurations.THRESHOLDS
 
 
 # VERIFICA SUGLI INDICI E LE SOGLIE
-def validateCandidate(level, subject, articles, citations, hindex):
-    threshold = THRESHOLDS[subject][level]
-    valid = False
-    if articles >= threshold["articles"] and citations >= threshold["citations"] and hindex >= threshold["hindex"]:
-        valid = True
-    return valid
+def validateCandidate(level, subject, articles, citations, hindex, thresholdArticles, thresholdCitations, thresholdHindex):
+    articlesF = False
+    citationsF = False
+    hindexF = False
+    if articles >= thresholdArticles:
+        articlesF = True
+    if citations >= thresholdCitations:
+        citationsF = True
+    if hindex >= thresholdHindex:
+        hindexF = True
+    return articlesF, citationsF, hindexF
 
 
 # CONFRONTO TRA DATI CALCOLATI E DATI REALI CONSIDERANDO IL SETTORE
 def matchData(crossData, subject):
-    validCalc = 0
-    validReal = 0
-    matching = 0
+    results = {
+        1: {
+            'candidates': 0,
+            'articles': 0,
+            'citations': 0,
+            'hindex': 0,
+            'passing': 0,
+            'matching': 0
+        },
+        2: {
+            'candidates': 0,
+            'articles': 0,
+            'citations': 0,
+            'hindex': 0,
+            'passing': 0,
+            'matching': 0
+        }
+    }
     for elem in crossData:
         calc = False
         real = False
         if subject == "" or crossData[elem]['subject'] == subject:
-            if validateCandidate(int(crossData[elem]['level']), crossData[elem]['subject'],
-                                 int(crossData[elem]['articles']), int(crossData[elem]['citations']), int(crossData[elem]['hindex'])):
-                validCalc = validCalc + 1
+            articles, citations, hindex = validateCandidate(int(crossData[elem]['level']), crossData[elem]['subject'],
+                                                            int(crossData[elem]['articles']), int(crossData[elem]['citations']), int(crossData[elem]['hindex']), int(crossData[elem]['threshold_articles']), int(crossData[elem]['threshold_citations']), int(crossData[elem]['threshold_hindex']))
+            if articles and citations and hindex:
                 calc = True
-            if validateCandidate(int(crossData[elem]['level']), crossData[elem]['subject'],
-                                 int(crossData[elem]['real_articles']), int(crossData[elem]['real_citations']), int(crossData[elem]['real_hindex'])):
-                validReal = validReal + 1
+                results[int(crossData[elem]['level'])]['passing'] = results[int(
+                    crossData[elem]['level'])]['passing'] + 1
+            real_articles, real_citations, real_hindex = validateCandidate(int(crossData[elem]['level']), crossData[elem]['subject'],
+                                 int(crossData[elem]['real_articles']), int(crossData[elem]['real_citations']), int(crossData[elem]['real_hindex']), int(crossData[elem]['threshold_articles']), int(crossData[elem]['threshold_citations']), int(crossData[elem]['threshold_hindex']))
+            if real_articles and real_citations and real_hindex:
                 real = True
             if calc == real:
-                matching = matching + 1
-    return validCalc, validReal, matching
+                results[int(crossData[elem]['level'])]['matching'] = results[int(
+                    crossData[elem]['level'])]['matching'] + 1
+            if articles == real_articles:
+                results[int(crossData[elem]['level'])]['articles'] = results[int(crossData[elem]['level'])]['articles'] + 1
+            if citations == real_citations:
+                results[int(crossData[elem]['level'])]['citations'] = results[int(crossData[elem]['level'])]['citations'] + 1
+            if hindex == real_hindex:
+                results[int(crossData[elem]['level'])]['hindex'] = results[int(crossData[elem]['level'])]['hindex'] + 1
+            results[int(crossData[elem]['level'])]['candidates'] = results[int(
+                crossData[elem]['level'])]['candidates'] + 1
+    return results
 
 
 # ANALISI DEI RISULTATI OTTENUTI
@@ -56,26 +86,8 @@ def analizeResults(crossDataCSV):
             results[0] = {
                 'validCalc': validCalc, 'validReal': validReal, 'matching': matching}
     else:
-        validCalc, validReal, matching = matchData(crossData, "")
-        results[0] = {
-            'validCalc': validCalc, 'validReal': validReal, 'matching': matching}
+        results = matchData(crossData, SUBJECTS[0])
     return results
-
-
-# AGGIUNGE I DATI REALI AGLI INDICI CALCOLATI
-def completeCrossData(crossData, realDataCSV):
-    data = {}
-    realData = asn.createCrossByIdDict(realDataCSV)
-    for candidate in crossData:
-        realArticles = realData[crossData[candidate]['id']
-                                ][crossData[candidate]['level']]['articles']
-        realCitations = realData[crossData[candidate]['id']
-                                 ][crossData[candidate]['level']]['citations']
-        realHindex = realData[crossData[candidate]['id']
-                              ][crossData[candidate]['level']]['hindex']
-        data[candidate] = {'id': crossData[candidate]['id'], 'name': crossData[candidate]['name'], 'level': crossData[candidate]['level'], 'subject': crossData[candidate]['subject'], 'articles': crossData[candidate]['articles'], 'real_articles': realArticles,
-                           'citations': crossData[candidate]['citations'], 'real_citations': realCitations, 'hindex': crossData[candidate]['hindex'], 'real_hindex': realHindex}
-    return data
 
 
 # INCROCIO DEI DATI CONTENUTI NEL CSV DEI CANDIDATI, NEL CSV DELLE CITAZIONI E NEL CSV DEI SETTORI
@@ -94,10 +106,9 @@ def crossData(candidates, citations, publicationDates):
             numberOfCitations = 0
             articles = 0
             citationsList = []  # UTILE PER IL CALCOLO DELL'H-INDEX
-            name = candidates[candidate]['name']
             candidateId = candidates[candidate]['id']
             candidateLevel = int(candidates[candidate]['level'])
-            journalDois = candidates[candidate]['journalDois'].split(', ')
+            journalDois = candidates[candidate]['journal_dois'].split(', ')
             dois = candidates[candidate]['dois'].split(', ')
             sessionDate = SESSIONS_MAP[int(candidates[candidate]['session'])]
             for doi in journalDois:
@@ -118,7 +129,6 @@ def crossData(candidates, citations, publicationDates):
             for i, citation in enumerate(citationsList):
                 if citation >= i + 1:  # CONTROLLO PER INCREMENTARE L'H-INDEX. i+1 PERCHE' i PARTE DA 0
                     hIndex = hIndex + 1
-            crossData[candidate] = {'id': candidateId, 'name': name, 'level': candidateLevel, 'subject': candidates[candidate]['subject'], 'articles': articles,
-                                    'citations': numberOfCitations, 'hindex': hIndex}
-    crossData = completeCrossData(crossData, './data/REAL_DATA.csv')
+            crossData[candidate] = {'session': candidates[candidate]['session'], 'level': candidateLevel, 'subject': candidates[candidate]['subject'], 'id': candidateId, 'articles': articles, 'citations': numberOfCitations, 'hindex': hIndex, 'real_articles': candidates[candidate]['real_articles'],
+                                    'real_citations': candidates[candidate]['real_citations'], 'real_hindex': candidates[candidate]['real_hindex'], 'threshold_articles': candidates[candidate]['threshold_articles'], 'threshold_citations': candidates[candidate]['threshold_citations'], 'threshold_hindex': candidates[candidate]['threshold_hindex']}
     return crossData

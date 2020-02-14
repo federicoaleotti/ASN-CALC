@@ -1,4 +1,5 @@
 import csv
+import ast
 
 
 def checkFileIsPresent(filename):
@@ -90,11 +91,12 @@ def createCandidatesDoisSet(filename):
         reader = csv.reader(document, delimiter=",")
         next(reader)
         for row in reader:
-            doisList = row[4].split(', ')
+            row = next(reader)
+            doisList = row[5]
+            doisList = doisList.split(', ')
             for doi in doisList:
                 dois.add(doi)
     return dois
-
 
 
 # CREA UN DIZIONARIO ORGANIZZATO PER ID E LIVELLO
@@ -110,7 +112,7 @@ def createCrossByIdDict(filename):
                 otherLevel = 1
             if row[0] in data:
                 data[row[0]][row[2]] = {'id': row[0], 'name': row[1], 'level': row[2],
-                                   'articles': row[3], 'citations': row[4], 'hindex': row[5]}
+                                        'articles': row[3], 'citations': row[4], 'hindex': row[5]}
             else:
                 data[row[0]] = {
                     level: {'id': row[0], 'name': row[1], 'level': row[2], 'articles': row[3], 'citations': row[4], 'hindex': row[5]},
