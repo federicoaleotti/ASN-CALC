@@ -40,10 +40,11 @@ def createCSV(data, filename, keys, calculatedRows):
 
 
 # CREAZIONE O MODIFICA DEL CSV DELLE CITAZIONI A PARTIRE DA UN DIZIONARIO CONTENENTE I DATI NELLA FORMA {"COL": VAL, "COL": VAL}
-def createCitationsCSV(data, filename):
+def createCitationsCSV(data, filename, isNew):
     with open(filename, 'a', newline='', encoding='utf-8') as document:
         writer = csv.writer(document)
-        writer.writerow(['doi', 'citations'])
+        if isNew == 0:
+            writer.writerow(['doi', 'citations'])
         for doi in data:
             row = [doi, data[doi]]
             writer.writerow(row)
@@ -85,17 +86,17 @@ def createSimpleDict(filename):
 
 
 # CREAZIONE DEL SET CONTENENTE I DOI DEGLI ARTICOLI PUBBLICATI SU JOURNAL DEI CANDIDATI
-def createCandidatesDoisSet(filename):
-    dois = set()
+def createCandidatesDoisDict(filename):
+    dois = {}
     with open(filename, encoding='utf-8') as document:
         reader = csv.reader(document, delimiter=",")
         next(reader)
         for row in reader:
-            row = next(reader)
-            doisList = row[5]
+            doisList = row[6]
             doisList = doisList.split(', ')
             for doi in doisList:
-                dois.add(doi)
+                doi = doi.lower()
+                dois[doi] = {'session': row[1], 'level': row[2]}
     return dois
 
 
@@ -119,3 +120,15 @@ def createCrossByIdDict(filename):
                     otherLevel: {}
                 }
     return data
+
+
+def getAllSubjects(crossDataCSV):
+    subjects = set()
+    with open(crossDataCSV, encoding='utf-8') as document:
+        reader = csv.reader(document, delimiter=",")
+        next(reader)
+        for row in reader:
+            if not row[3] in subjects:
+                subjects.add(row[3])
+    return subjects
+
