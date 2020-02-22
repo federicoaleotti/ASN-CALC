@@ -21,14 +21,19 @@ if __name__ == '__main__':
     if choice == 1:
         if asn.checkFileIsPresent(CANDIDATES_IN):
             calculatedRows = 0
-            print('GENERATING CANDIDATES')
+            log = open('./data/tmp/log.txt', 'a')
+            log.write('GENERATING CANDIDATES\n')
             if asn.checkFileIsPresent(CANDIDATES_OUT):
                 calculatedRows = asn.checkProcess(CANDIDATES_OUT)
-                print('RESUMING FROM ROW ' + str(calculatedRows))
+                log.write('RESUMING FROM ROW ' + str(calculatedRows))
+            log.close()
             asn.formatData(
                 CANDIDATES_IN, calculatedRows, CANDIDATES_OUT, PUBLICATION_DATES, CITATIONS_OUT)
         else:
             print(CANDIDATES_IN, ' NOT FOUND')
+        log = open('./data/tmp/log.txt', 'a')
+        log.write('CANDIDATES GENERATED\n')
+        log.close()
     elif choice == 2:
         if asn.checkFileIsPresent(COCI_DATA):
             print('GENERATING CITATIONS')
@@ -59,6 +64,7 @@ if __name__ == '__main__':
         results = asn.analizeResults(CROSS_DATA)
         subjectsFinal = []
         doAll = True
+        candidatesZero = 0
         resultsAll = {
             1: {
                 'overall': 0,
@@ -73,6 +79,7 @@ if __name__ == '__main__':
                 'hindex': 0,
             }
         }
+        subjectsOverall = {}
         if asn.checkFileIsPresent('./data/output/output.txt'):
             open('./data/output/output.txt', 'w').close()
         if len(SUBJECTS) > 0:
@@ -80,54 +87,79 @@ if __name__ == '__main__':
         else:
             subjectsFinal = asn.getAllSubjects(CROSS_DATA)
         for subject in subjectsFinal:
+            firstLevelCandidatesZero = False
+            secondLevelCandidatesZero = False
             output = open('./data/output/output.txt', 'a')
             output.write('SUBJECT: ' + subject + '\n')
-            firstLevelOverall = (
-                results[subject][1]['matching']*100) / results[subject][1]['candidates']
-            firstLevelArticles = (
-                results[subject][1]['articles']*100) / results[subject][1]['candidates']
-            firstLevelCitations = (
-                results[subject][1]['citations']*100) / results[subject][1]['candidates']
-            firstLevelHindex = (
-                results[subject][1]['hindex']*100) / results[subject][1]['candidates']
-            output.write('LEVEL 1\n')
-            output.write('OVERALL: ' + str(firstLevelOverall) + ' ARTICLES: ' + str(firstLevelArticles) +
-                         ' CITATIONS: ' + str(firstLevelCitations) + ' HINDEX: ' + str(firstLevelHindex) + '\n')
-            resultsAll[1]['overall'] = resultsAll[1]['overall'] + \
-                firstLevelOverall
-            resultsAll[1]['articles'] = resultsAll[1]['articles'] + \
-                firstLevelArticles
-            resultsAll[1]['citations'] = resultsAll[1]['citations'] + \
-                firstLevelCitations
-            resultsAll[1]['hindex'] = resultsAll[1]['hindex'] + \
-                firstLevelHindex
-            secondLevelOverall = (
-                results[subject][2]['matching']*100) / results[subject][2]['candidates']
-            secondLevelArticles = (
-                results[subject][2]['articles']*100) / results[subject][2]['candidates']
-            secondLevelCitations = (
-                results[subject][2]['citations']*100) / results[subject][2]['candidates']
-            secondLevelHindex = (
-                results[subject][2]['hindex']*100) / results[subject][2]['candidates']
-            output.write('LEVEL 2\n')
-            output.write('OVERALL: ' + str(secondLevelOverall) + ' ARTICLES: ' + str(secondLevelArticles) +
-                         ' CITATIONS: ' + str(secondLevelCitations) + ' HINDEX: ' + str(secondLevelHindex) + '\n\n')
-            resultsAll[2]['overall'] = resultsAll[2]['overall'] + \
-                secondLevelOverall
-            resultsAll[2]['articles'] = resultsAll[2]['articles'] + \
-                secondLevelArticles
-            resultsAll[2]['citations'] = resultsAll[2]['citations'] + \
-                secondLevelCitations
-            resultsAll[2]['hindex'] = resultsAll[2]['hindex'] + \
-                secondLevelHindex
-            asn.makeHistogram(firstLevelOverall, firstLevelArticles, firstLevelCitations, firstLevelHindex,
-                              secondLevelOverall, secondLevelArticles, secondLevelCitations, secondLevelHindex, subject)
-        if len(subjectsFinal) > 1:
+            firstLevelOverall = 0
+            firstLevelArticles = 0
+            firstLevelCitations = 0
+            firstLevelHindex = 0
+            secondLevelOverall = 0
+            secondLevelArticles = 0
+            secondLevelCitations = 0
+            secondLevelHindex = 0
+            if results[subject][1]['candidates'] > 0:
+                firstLevelOverall = (
+                    results[subject][1]['matching']*100) / results[subject][1]['candidates']
+                firstLevelArticles = (
+                    results[subject][1]['articles']*100) / results[subject][1]['candidates']
+                firstLevelCitations = (
+                    results[subject][1]['citations']*100) / results[subject][1]['candidates']
+                firstLevelHindex = (
+                    results[subject][1]['hindex']*100) / results[subject][1]['candidates']
+                output.write('LEVEL 1\n')
+                output.write('OVERALL: ' + str(firstLevelOverall) + ' ARTICLES: ' + str(firstLevelArticles) +
+                             ' CITATIONS: ' + str(firstLevelCitations) + ' HINDEX: ' + str(firstLevelHindex) + '\n')
+                resultsAll[1]['overall'] = resultsAll[1]['overall'] + \
+                    firstLevelOverall
+                resultsAll[1]['articles'] = resultsAll[1]['articles'] + \
+                    firstLevelArticles
+                resultsAll[1]['citations'] = resultsAll[1]['citations'] + \
+                    firstLevelCitations
+                resultsAll[1]['hindex'] = resultsAll[1]['hindex'] + \
+                    firstLevelHindex
+            else:
+                firstLevelCandidatesZero = True
+            if results[subject][2]['candidates'] > 0:
+                secondLevelOverall = (
+                    results[subject][2]['matching']*100) / results[subject][2]['candidates']
+                secondLevelArticles = (
+                    results[subject][2]['articles']*100) / results[subject][2]['candidates']
+                secondLevelCitations = (
+                    results[subject][2]['citations']*100) / results[subject][2]['candidates']
+                secondLevelHindex = (
+                    results[subject][2]['hindex']*100) / results[subject][2]['candidates']
+                output.write('LEVEL 2\n')
+                output.write('OVERALL: ' + str(secondLevelOverall) + ' ARTICLES: ' + str(secondLevelArticles) +
+                             ' CITATIONS: ' + str(secondLevelCitations) + ' HINDEX: ' + str(secondLevelHindex) + '\n\n')
+                subjectsOverall[subject] = {
+                    1: firstLevelOverall, 2: secondLevelOverall}
+                resultsAll[2]['overall'] = resultsAll[2]['overall'] + \
+                    secondLevelOverall
+                resultsAll[2]['articles'] = resultsAll[2]['articles'] + \
+                    secondLevelArticles
+                resultsAll[2]['citations'] = resultsAll[2]['citations'] + \
+                    secondLevelCitations
+                resultsAll[2]['hindex'] = resultsAll[2]['hindex'] + \
+                    secondLevelHindex
+            else:
+                secondLevelCandidatesZero = True
+            if firstLevelCandidatesZero and secondLevelCandidatesZero:
+                candidatesZero = candidatesZero + 1
+            else:
+                asn.makeHistogram(firstLevelOverall, firstLevelArticles, firstLevelCitations, firstLevelHindex,
+                                  secondLevelOverall, secondLevelArticles, secondLevelCitations, secondLevelHindex, subject)
+        if len(subjectsFinal) - candidatesZero > 1:
             output = open('./data/output/output.txt', 'a')
             output.write('GLOBAL\n')
             output.write('LEVEL 1\n')
-            output.write('OVERALL: ' + str(resultsAll[1]['overall'] / len(subjectsFinal)) + ' ARTICLES: ' + str(resultsAll[1]['articles'] / len(subjectsFinal)) +
-                         ' CITATIONS: ' + str(resultsAll[1]['citations'] / len(subjectsFinal)) + ' HINDEX: ' + str(resultsAll[1]['hindex'] / len(subjectsFinal)) + '\n')
+            output.write('OVERALL: ' + str(resultsAll[1]['overall'] / (len(subjectsFinal) - candidatesZero)) + ' ARTICLES: ' + str(resultsAll[1]['articles'] / (len(subjectsFinal) - candidatesZero)) +
+                         ' CITATIONS: ' + str(resultsAll[1]['citations'] / (len(subjectsFinal) - candidatesZero)) + ' HINDEX: ' + str(resultsAll[1]['hindex'] / (len(subjectsFinal) - candidatesZero)) + '\n')
             output.write('LEVEL 2\n')
-            output.write('OVERALL: ' + str(resultsAll[2]['overall'] / len(subjectsFinal)) + ' ARTICLES: ' + str(resultsAll[2]['articles'] / len(subjectsFinal)) +
-                         ' CITATIONS: ' + str(resultsAll[2]['citations'] / len(subjectsFinal)) + ' HINDEX: ' + str(resultsAll[2]['hindex'] / len(subjectsFinal)) + '\n')
+            output.write('OVERALL: ' + str(resultsAll[2]['overall'] / (len(subjectsFinal) - candidatesZero)) + ' ARTICLES: ' + str(resultsAll[2]['articles'] / (len(subjectsFinal) - candidatesZero)) +
+                         ' CITATIONS: ' + str(resultsAll[2]['citations'] / (len(subjectsFinal) - candidatesZero)) + ' HINDEX: ' + str(resultsAll[2]['hindex'] / (len(subjectsFinal) - candidatesZero)) + '\n')
+            asn.makeHistogram(resultsAll[1]['overall'] / (len(subjectsFinal) - candidatesZero), resultsAll[1]['articles'] / (len(subjectsFinal) - candidatesZero), resultsAll[1]['citations'] / (len(subjectsFinal) - candidatesZero), resultsAll[1]['hindex'] / (len(subjectsFinal) - candidatesZero),
+                              resultsAll[2]['overall'] / (len(subjectsFinal) - candidatesZero), resultsAll[2]['articles'] / (len(subjectsFinal) - candidatesZero), resultsAll[2]['citations'] / (len(subjectsFinal) - candidatesZero), resultsAll[2]['hindex'] / (len(subjectsFinal) - candidatesZero), 'GLOBAL')
+        asn.makeHistogramAllLevel1(subjectsOverall)
+        asn.makeHistogramAllLevel2(subjectsOverall)

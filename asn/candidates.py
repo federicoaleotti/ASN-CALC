@@ -46,7 +46,9 @@ def cleanCandidatesCSV(filename):
         asn.createCSV(candidates, filename, ['name', 'session', 'level', 'subject', 'id', 'journal_dois', 'dois', 'real_articles',
                                              'real_citations', 'real_hindex', 'threshold_articles', 'threshold_citations', 'threshold_hindex'], 0)
     except:
-        print('Error while refactoring CANDIDATES_OUT')
+        log = open('./data/tmp/log.txt', 'a')
+        log.write('Error while refactoring CANDIDATES_OUT\n')
+        log.close()
         open(filename, 'a').close()
         os.remove('./data/tmp/BACKUP_CANDIDATES_OUT.csv')
     finally:
@@ -73,13 +75,14 @@ def cleanPublicationCSV(filename):
     try:
         asn.createPublicationDatesCSV(publications, filename)
     except:
-        print('Error while refactoring PUBLICATION_DATES.csv')
+        log = open('./data/tmp/log.txt', 'a')
+        log.write('Error while refactoring PUBLICATION_DATES.csv\n')
+        log.close()
         open(filename, 'a').close()
         shutil.copyfile('./data/tmp/BACKUP_PUBLICATION_DATES.csv', filename)
         os.remove('./data/tmp/BACKUP_PUBLICATION_DATES.csv')
     finally:
         os.remove('./data/tmp/BACKUP_PUBLICATION_DATES.csv')
-
 
 
 def queryCOCI(doi, date, timeGap):
@@ -97,7 +100,6 @@ def queryCOCI(doi, date, timeGap):
         if elemDate < date and (int(date.year)-int(elemDate.year)) < timeGap:
             citations = citations + 1
     return doi, citations
-
 
 
 def checkAuthorDBLP(name):
@@ -174,9 +176,8 @@ def checkDoiJournalArticle(doi):
     try:
         data = works.doi(doi)
         if 'type' in data:
-            if data['type'] == 'journal-article' or data['type'] == 'book':
-                if data['type'] == 'journal-article':
-                    isJournal = doi
+            if data['type'] == 'journal-article':
+                isJournal = doi
         if 'author' in data:
             author = data['author']
         if 'published-print' in data:
@@ -281,19 +282,8 @@ def formatData(filename, calculatedRows, candidatesCSV, publicationDatesCSV, cit
                         if dblp[doi]['journal'] == True:
                             if not doi in journalDois:
                                 journalDois.append(doi)
-                                print('JOURNAL FROM DBLP')
                             if not doi in publicationDates:
                                 publicationDates[doi] = dblp[doi]['date']
-                                print('DATE FROM DBLP')
-                # cociCitations = {}
-                # sessionDate = SESSIONS_MAP[6][int(session)]
-                # sessionDate = datetime.strptime(sessionDate, '%Y-%m-%d').date()
-                # timeGap = TIME_GAPS['citations'][int(level)]
-                # with Pool(processes=8) as pool:
-                #     results = pool.map(partial(queryCOCI, date=sessionDate, timeGap=timeGap), dois)
-                # for elem in results:
-                #     cociCitations[elem[0]] = elem[1]
-                # asn.createCitationsCSV(cociCitations, citationsCSV, calculatedRows)
                 if len(journalDois) > 0 or len(doisArray) > 0:
                     candidates[candidateIndex] = {
                         'name': candidateName, 'session': session, 'level': level, 'subject': subject, 'id': candidateId, 'journal_dois': journalDois, 'dois': dois, 'real_articles': realData['articles'], 'real_citations': realData['citations'], 'real_hindex': realData['hindex'], 'threshold_articles': threshold['articles'], 'threshold_citations': threshold['citations'], 'threshold_hindex': threshold['hindex']}
@@ -304,7 +294,9 @@ def formatData(filename, calculatedRows, candidatesCSV, publicationDatesCSV, cit
                     asn.createPublicationDatesCSV(
                         publicationDates, publicationDatesCSV)
                 candidates = {}
-            print('END ROW ' + str(doneRows))
+            log = open('./data/tmp/log.txt', 'a')
+            log.write('END ROW ' + str(doneRows) + '\n')
+            log.close()
             doneRows = doneRows + 1
             calculatedRows = calculatedRows + 1
     cleanCandidatesCSV(candidatesCSV)

@@ -1,4 +1,4 @@
-CANDIDATES_IN = './data/CANDIDATES_REDUCED.tsv'
+CANDIDATES_IN = './data/CANDIDATES_TEST.csv'
 CANDIDATES_OUT = './data/CANDIDATES_OUT.csv'
 COCI_DATA = './data/COCI_DATA.csv'
 CITATIONS_OUT = './data/CITATIONS_OUT.csv'
@@ -33,7 +33,7 @@ SESSIONS_MAP = {
         5: '2018-04-06'
     }
 }
-SUBJECTS = ["01-B1"] 
+SUBJECTS = [] 
 THRESHOLDS = {
     "INFORMATICA": {
         1: {
