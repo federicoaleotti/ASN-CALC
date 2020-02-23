@@ -42,33 +42,33 @@ def matchData(crossData, subject):
         }
     }
     for elem in crossData:
-            calc = False
-            real = False
-            if subject == "" or crossData[elem]['subject'] == subject:
-                articles, citations, hindex = validateCandidate(int(crossData[elem]['level']), crossData[elem]['subject'],
-                                                                int(crossData[elem]['articles']), int(crossData[elem]['citations']), int(crossData[elem]['hindex']), int(crossData[elem]['threshold_articles']), int(crossData[elem]['threshold_citations']), int(crossData[elem]['threshold_hindex']))
-                if articles and citations and hindex:
-                    calc = True
-                    results[int(crossData[elem]['level'])]['passing'] = results[int(
-                        crossData[elem]['level'])]['passing'] + 1
-                real_articles, real_citations, real_hindex = validateCandidate(int(crossData[elem]['level']), crossData[elem]['subject'],
-                                                                            int(crossData[elem]['real_articles']), int(crossData[elem]['real_citations']), int(crossData[elem]['real_hindex']), int(crossData[elem]['threshold_articles']), int(crossData[elem]['threshold_citations']), int(crossData[elem]['threshold_hindex']))
-                if real_articles and real_citations and real_hindex:
-                    real = True
-                if calc == real:
-                    results[int(crossData[elem]['level'])]['matching'] = results[int(
-                        crossData[elem]['level'])]['matching'] + 1
-                if articles == real_articles:
-                    results[int(crossData[elem]['level'])]['articles'] = results[int(
-                        crossData[elem]['level'])]['articles'] + 1
-                if citations == real_citations:
-                    results[int(crossData[elem]['level'])]['citations'] = results[int(
-                        crossData[elem]['level'])]['citations'] + 1
-                if hindex == real_hindex:
-                    results[int(crossData[elem]['level'])]['hindex'] = results[int(
-                        crossData[elem]['level'])]['hindex'] + 1
-                results[int(crossData[elem]['level'])]['candidates'] = results[int(
-                    crossData[elem]['level'])]['candidates'] + 1
+        calc = False
+        real = False
+        if subject == "" or crossData[elem]['subject'] == subject:
+            articles, citations, hindex = validateCandidate(int(crossData[elem]['level']), crossData[elem]['subject'],
+                                                            int(crossData[elem]['articles']), int(crossData[elem]['citations']), int(crossData[elem]['hindex']), int(crossData[elem]['threshold_articles']), int(crossData[elem]['threshold_citations']), int(crossData[elem]['threshold_hindex']))
+            if (articles and citations) or (articles and hindex) or (citations and hindex):
+                calc = True
+                results[int(crossData[elem]['level'])]['passing'] = results[int(
+                    crossData[elem]['level'])]['passing'] + 1
+            real_articles, real_citations, real_hindex = validateCandidate(int(crossData[elem]['level']), crossData[elem]['subject'],
+                                                                           int(crossData[elem]['real_articles']), int(crossData[elem]['real_citations']), int(crossData[elem]['real_hindex']), int(crossData[elem]['threshold_articles']), int(crossData[elem]['threshold_citations']), int(crossData[elem]['threshold_hindex']))
+            if (real_articles and real_citations) or (real_articles and real_hindex) or (real_citations and real_hindex):
+                real = True
+            if calc == real:
+                results[int(crossData[elem]['level'])]['matching'] = results[int(
+                    crossData[elem]['level'])]['matching'] + 1
+            if articles == real_articles:
+                results[int(crossData[elem]['level'])]['articles'] = results[int(
+                    crossData[elem]['level'])]['articles'] + 1
+            if citations == real_citations:
+                results[int(crossData[elem]['level'])]['citations'] = results[int(
+                    crossData[elem]['level'])]['citations'] + 1
+            if hindex == real_hindex:
+                results[int(crossData[elem]['level'])]['hindex'] = results[int(
+                    crossData[elem]['level'])]['hindex'] + 1
+            results[int(crossData[elem]['level'])]['candidates'] = results[int(
+                crossData[elem]['level'])]['candidates'] + 1
     return results
 
 
